@@ -116,7 +116,7 @@ def main(args):
 
     # --- MAIN LOOP --- repeat test cases NTIMES times ---
 
-    test = 'vector'
+    test = 'strange'
     scalar = 3.0
     for k in range(NTIMES):
 
@@ -156,6 +156,25 @@ def main(args):
 
             times[3][k] = mysecond()
             a[:] = b[:] + scalar * c[:]
+            times[3][k] = mysecond() - times[3][k]
+
+        if test == 'strange':
+            times[0][k] = mysecond()
+            c = a.copy()
+            times[0][k] = mysecond() - times[0][k]
+
+            times[1][k] = mysecond()
+            c *= scalar
+            b = c.copy()
+            times[1][k] = mysecond() - times[1][k]
+
+            times[2][k] = mysecond()
+            c = a + b
+            times[2][k] = mysecond() - times[2][k]
+
+            times[3][k] = mysecond()
+            c *= scalar
+            a = b + c
             times[3][k] = mysecond() - times[3][k]
 
     # --- SUMMARY ---
