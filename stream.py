@@ -116,28 +116,47 @@ def main(args):
 
     # --- MAIN LOOP --- repeat test cases NTIMES times ---
 
+    test = 'vector'
     scalar = 3.0
     for k in range(NTIMES):
 
-        times[0][k] = mysecond()
-        for j in range(STREAM_ARRAY_SIZE):
-            c[j] = a[j]
-        times[0][k] = mysecond() - times[0][k]
+        if test == 'reference':
+            times[0][k] = mysecond()
+            for j in range(STREAM_ARRAY_SIZE):
+                c[j] = a[j]
+            times[0][k] = mysecond() - times[0][k]
 
-        times[1][k] = mysecond()
-        for j in range(STREAM_ARRAY_SIZE):
-            b[j] = scalar*c[j]
-        times[1][k] = mysecond() - times[1][k]
+            times[1][k] = mysecond()
+            for j in range(STREAM_ARRAY_SIZE):
+                b[j] = scalar*c[j]
+            times[1][k] = mysecond() - times[1][k]
 
-        times[2][k] = mysecond()
-        for j in range(STREAM_ARRAY_SIZE):
-            c[j] = a[j]+b[j]
-        times[2][k] = mysecond() - times[2][k]
+            times[2][k] = mysecond()
+            for j in range(STREAM_ARRAY_SIZE):
+                c[j] = a[j]+b[j]
+            times[2][k] = mysecond() - times[2][k]
 
-        times[3][k] = mysecond()
-        for j in range(STREAM_ARRAY_SIZE):
-            a[j] = b[j]+scalar*c[j]
-        times[3][k] = mysecond() - times[3][k]
+            times[3][k] = mysecond()
+            for j in range(STREAM_ARRAY_SIZE):
+                a[j] = b[j]+scalar*c[j]
+            times[3][k] = mysecond() - times[3][k]
+
+        if test == 'vector':
+            times[0][k] = mysecond()
+            c[:] = a[:]
+            times[0][k] = mysecond() - times[0][k]
+
+            times[1][k] = mysecond()
+            b[:] = scalar * c[:]
+            times[1][k] = mysecond() - times[1][k]
+
+            times[2][k] = mysecond()
+            c[:] = a[:] + b[:]
+            times[2][k] = mysecond() - times[2][k]
+
+            times[3][k] = mysecond()
+            a[:] = b[:] + scalar * c[:]
+            times[3][k] = mysecond() - times[3][k]
 
     # --- SUMMARY ---
 
@@ -151,7 +170,7 @@ def main(args):
     for j in range(4):
         avgtime[j] = avgtime[j] / float(NTIMES-1)
 
-        print("%s%12.1f  %11.6f  %11.6f  %11.6f\n" %
+        print("%s%12.1f  %11.6f  %11.6f  %11.6f" %
               (label[j],
                1.0e-06 * tbytes[j]/mintime[j],
                avgtime[j],
