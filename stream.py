@@ -116,7 +116,7 @@ def main(args):
 
     # --- MAIN LOOP --- repeat test cases NTIMES times ---
 
-    test = 'strange'
+    test = 'cython_ref'
     scalar = 3.0
     for k in range(NTIMES):
 
@@ -175,6 +175,24 @@ def main(args):
             times[3][k] = mysecond()
             c *= scalar
             a = b + c
+            times[3][k] = mysecond() - times[3][k]
+
+        if test == 'cython_ref':
+            from cython_ref import xcopy, xscale, xadd, xtriad
+            times[0][k] = mysecond()
+            xcopy(a, c)
+            times[0][k] = mysecond() - times[0][k]
+
+            times[1][k] = mysecond()
+            xscale(b, c, scalar)
+            times[1][k] = mysecond() - times[1][k]
+
+            times[2][k] = mysecond()
+            xadd(a, b, c)
+            times[2][k] = mysecond() - times[2][k]
+
+            times[3][k] = mysecond()
+            xtriad(a, b, c, scalar)
             times[3][k] = mysecond() - times[3][k]
 
     # --- SUMMARY ---
