@@ -27,7 +27,7 @@ def checktick():
     return minDelta
 
 
-def main(args):
+def main(args, tests):
 
     STREAM_ARRAY_SIZE = args.STREAM_ARRAY_SIZE
     NTIMES = args.NTIMES
@@ -35,8 +35,6 @@ def main(args):
     STREAM_TYPE = args.STREAM_TYPE
 
     HLINE = "-------------------------------------------------------------"
-    MIN = min
-    MAX = max
 
     a = np.empty((STREAM_ARRAY_SIZE+OFFSET,), dtype=STREAM_TYPE)
     b = np.empty((STREAM_ARRAY_SIZE+OFFSET,), dtype=STREAM_TYPE)
@@ -116,105 +114,106 @@ def main(args):
 
     # --- MAIN LOOP --- repeat test cases NTIMES times ---
 
-    test = 'cython_ref'
     scalar = 3.0
-    for k in range(NTIMES):
+    for test in tests:
+        print('-- %s --' % test)
+        times[:] = 0.0
+        for k in range(NTIMES):
 
-        if test == 'reference':
-            times[0][k] = mysecond()
-            for j in range(STREAM_ARRAY_SIZE):
-                c[j] = a[j]
-            times[0][k] = mysecond() - times[0][k]
+            if test == 'reference':
+                times[0][k] = mysecond()
+                for j in range(STREAM_ARRAY_SIZE):
+                    c[j] = a[j]
+                times[0][k] = mysecond() - times[0][k]
 
-            times[1][k] = mysecond()
-            for j in range(STREAM_ARRAY_SIZE):
-                b[j] = scalar*c[j]
-            times[1][k] = mysecond() - times[1][k]
+                times[1][k] = mysecond()
+                for j in range(STREAM_ARRAY_SIZE):
+                    b[j] = scalar*c[j]
+                times[1][k] = mysecond() - times[1][k]
 
-            times[2][k] = mysecond()
-            for j in range(STREAM_ARRAY_SIZE):
-                c[j] = a[j]+b[j]
-            times[2][k] = mysecond() - times[2][k]
+                times[2][k] = mysecond()
+                for j in range(STREAM_ARRAY_SIZE):
+                    c[j] = a[j]+b[j]
+                times[2][k] = mysecond() - times[2][k]
 
-            times[3][k] = mysecond()
-            for j in range(STREAM_ARRAY_SIZE):
-                a[j] = b[j]+scalar*c[j]
-            times[3][k] = mysecond() - times[3][k]
+                times[3][k] = mysecond()
+                for j in range(STREAM_ARRAY_SIZE):
+                    a[j] = b[j]+scalar*c[j]
+                times[3][k] = mysecond() - times[3][k]
 
-        if test == 'vector':
-            times[0][k] = mysecond()
-            c[:] = a[:]
-            times[0][k] = mysecond() - times[0][k]
+            elif test == 'vector':
+                times[0][k] = mysecond()
+                c[:] = a[:]
+                times[0][k] = mysecond() - times[0][k]
 
-            times[1][k] = mysecond()
-            b[:] = scalar * c[:]
-            times[1][k] = mysecond() - times[1][k]
+                times[1][k] = mysecond()
+                b[:] = scalar * c[:]
+                times[1][k] = mysecond() - times[1][k]
 
-            times[2][k] = mysecond()
-            c[:] = a[:] + b[:]
-            times[2][k] = mysecond() - times[2][k]
+                times[2][k] = mysecond()
+                c[:] = a[:] + b[:]
+                times[2][k] = mysecond() - times[2][k]
 
-            times[3][k] = mysecond()
-            a[:] = b[:] + scalar * c[:]
-            times[3][k] = mysecond() - times[3][k]
+                times[3][k] = mysecond()
+                a[:] = b[:] + scalar * c[:]
+                times[3][k] = mysecond() - times[3][k]
 
-        if test == 'strange':
-            times[0][k] = mysecond()
-            c = a.copy()
-            times[0][k] = mysecond() - times[0][k]
+            elif test == 'strange':
+                times[0][k] = mysecond()
+                c = a.copy()
+                times[0][k] = mysecond() - times[0][k]
 
-            times[1][k] = mysecond()
-            c *= scalar
-            b = c.copy()
-            times[1][k] = mysecond() - times[1][k]
+                times[1][k] = mysecond()
+                c *= scalar
+                b = c.copy()
+                times[1][k] = mysecond() - times[1][k]
 
-            times[2][k] = mysecond()
-            c = a + b
-            times[2][k] = mysecond() - times[2][k]
+                times[2][k] = mysecond()
+                c = a + b
+                times[2][k] = mysecond() - times[2][k]
 
-            times[3][k] = mysecond()
-            c *= scalar
-            a = b + c
-            times[3][k] = mysecond() - times[3][k]
+                times[3][k] = mysecond()
+                c *= scalar
+                a = b + c
+                times[3][k] = mysecond() - times[3][k]
 
-        if test == 'cython_ref':
-            from cython_ref import xcopy, xscale, xadd, xtriad
-            times[0][k] = mysecond()
-            xcopy(a, c)
-            times[0][k] = mysecond() - times[0][k]
+            elif test == 'cython_ref':
+                from cython_ref import xcopy, xscale, xadd, xtriad
+                times[0][k] = mysecond()
+                xcopy(a, c)
+                times[0][k] = mysecond() - times[0][k]
 
-            times[1][k] = mysecond()
-            xscale(b, c, scalar)
-            times[1][k] = mysecond() - times[1][k]
+                times[1][k] = mysecond()
+                xscale(b, c, scalar)
+                times[1][k] = mysecond() - times[1][k]
 
-            times[2][k] = mysecond()
-            xadd(a, b, c)
-            times[2][k] = mysecond() - times[2][k]
+                times[2][k] = mysecond()
+                xadd(a, b, c)
+                times[2][k] = mysecond() - times[2][k]
 
-            times[3][k] = mysecond()
-            xtriad(a, b, c, scalar)
-            times[3][k] = mysecond() - times[3][k]
+                times[3][k] = mysecond()
+                xtriad(a, b, c, scalar)
+                times[3][k] = mysecond() - times[3][k]
 
-    # --- SUMMARY ---
+            else:
+                print('...test not implemented')
 
-    for k in range(1, NTIMES):  # note -- skip first iteration
+        # --- SUMMARY ---
+
+        avgtime = times[:, 1:].mean(axis=1)  # note -- skip first iteration
+        mintime = times[:, 1:].min(axis=1)
+        maxtime = times[:, 1:].max(axis=1)
+
+        print("Function    Best Rate MB/s  Avg time     Min time     Max time")
         for j in range(4):
-            avgtime[j] = avgtime[j] + times[j][k]
-            mintime[j] = MIN(mintime[j], times[j][k])
-            maxtime[j] = MAX(maxtime[j], times[j][k])
+            print("%s%12.1f  %11.6f  %11.6f  %11.6f" %
+                  (label[j],
+                   1.0e-06 * tbytes[j]/mintime[j],
+                   avgtime[j],
+                   mintime[j],
+                   maxtime[j]))
 
-    print("Function    Best Rate MB/s  Avg time     Min time     Max time")
-    for j in range(4):
-        avgtime[j] = avgtime[j] / float(NTIMES-1)
-
-        print("%s%12.1f  %11.6f  %11.6f  %11.6f" %
-              (label[j],
-               1.0e-06 * tbytes[j]/mintime[j],
-               avgtime[j],
-               mintime[j],
-               maxtime[j]))
-
-    print(HLINE)
+        print(HLINE)
 
 if __name__ == '__main__':
     import argparse
@@ -230,5 +229,6 @@ if __name__ == '__main__':
                         default='double')
 
     args = parser.parse_args()
-    main(args)
+    tests = ['reference', 'vector', 'strange', 'cython_ref']
+    main(args, tests)
     checktick()
