@@ -177,8 +177,11 @@ def main(args, tests):
                 a = b + c
                 times[3][k] = mysecond() - times[3][k]
 
-            elif test == 'cython_ref':
-                from cython_ref import xcopy, xscale, xadd, xtriad
+            elif test == 'cython_ref' or test == 'cython_omp':
+                if test == 'cython_ref':
+                    from cython_ref import xcopy, xscale, xadd, xtriad
+                if test == 'cython_omp':
+                    from cython_omp import xcopy, xscale, xadd, xtriad
                 times[0][k] = mysecond()
                 xcopy(a, c)
                 times[0][k] = mysecond() - times[0][k]
@@ -227,8 +230,19 @@ if __name__ == '__main__':
                         default=0)
     parser.add_argument('--STREAM_TYPE', action='store', dest='STREAM_TYPE',
                         default='double')
-
+    parser.add_argument('--test', nargs="*", default=['all'])
     args = parser.parse_args()
-    tests = ['reference', 'vector', 'strange', 'cython_ref']
+
+    testlist = ['reference', 'vector', 'strange', 'cython_ref', 'cython_omp']
+    tests = []
+
+    if 'all' in args.test:
+        tests = testlist
+
+    for test in args.test:
+        if test in testlist:
+            tests.append(test)
+
+    tests = list(set(tests))  # uniquify
     main(args, tests)
     checktick()
