@@ -5,7 +5,7 @@ from Cython.Distutils import build_ext
 
 import os
 
-os.environ["CC"] = "/usr/local/bin/gcc-5"
+os.environ["CC"] = "/usr/local/bin/gcc-8"
 
 module_ref = Extension("cython_ref",
                        ["cython_ref.pyx"],
