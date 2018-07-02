@@ -1,7 +1,5 @@
 import numpy as np
-from time import time
-
-mysecond = time
+from timeit import default_timer as timer
 
 
 def checkSTREAMresults():
@@ -14,10 +12,10 @@ def checktick():
 
     for i in range(M):
 
-        t1 = mysecond()
-        t2 = mysecond()
+        t1 = timer()
+        t2 = timer()
         while (t2 - t1) < 1e-6:
-            t2 = mysecond()
+            t2 = timer()
         t1 = t2
         timesfound[i] = t1
 
@@ -94,10 +92,10 @@ def main(args, tests):
               "less than one microsecond.")
         quantum = 1
 
-    t = mysecond()
+    t = timer()
     for j in range(STREAM_ARRAY_SIZE):
         a[j] = 2.0 * a[j]
-    t = 1.0e6 * (mysecond() - t)
+    t = 1.0e6 * (timer() - t)
 
     print("Each test below will take on the order"
           " of %d microseconds." % int(t))
@@ -121,82 +119,82 @@ def main(args, tests):
         for k in range(NTIMES):
 
             if test == 'reference':
-                times[0][k] = mysecond()
+                times[0][k] = timer()
                 for j in range(STREAM_ARRAY_SIZE):
                     c[j] = a[j]
-                times[0][k] = mysecond() - times[0][k]
+                times[0][k] = timer() - times[0][k]
 
-                times[1][k] = mysecond()
+                times[1][k] = timer()
                 for j in range(STREAM_ARRAY_SIZE):
                     b[j] = scalar*c[j]
-                times[1][k] = mysecond() - times[1][k]
+                times[1][k] = timer() - times[1][k]
 
-                times[2][k] = mysecond()
+                times[2][k] = timer()
                 for j in range(STREAM_ARRAY_SIZE):
                     c[j] = a[j]+b[j]
-                times[2][k] = mysecond() - times[2][k]
+                times[2][k] = timer() - times[2][k]
 
-                times[3][k] = mysecond()
+                times[3][k] = timer()
                 for j in range(STREAM_ARRAY_SIZE):
                     a[j] = b[j]+scalar*c[j]
-                times[3][k] = mysecond() - times[3][k]
+                times[3][k] = timer() - times[3][k]
 
             elif test == 'vector':
-                times[0][k] = mysecond()
+                times[0][k] = timer()
                 c[:] = a[:]
-                times[0][k] = mysecond() - times[0][k]
+                times[0][k] = timer() - times[0][k]
 
-                times[1][k] = mysecond()
+                times[1][k] = timer()
                 b[:] = scalar * c[:]
-                times[1][k] = mysecond() - times[1][k]
+                times[1][k] = timer() - times[1][k]
 
-                times[2][k] = mysecond()
+                times[2][k] = timer()
                 c[:] = a[:] + b[:]
-                times[2][k] = mysecond() - times[2][k]
+                times[2][k] = timer() - times[2][k]
 
-                times[3][k] = mysecond()
+                times[3][k] = timer()
                 a[:] = b[:] + scalar * c[:]
-                times[3][k] = mysecond() - times[3][k]
+                times[3][k] = timer() - times[3][k]
 
             elif test == 'strange':
-                times[0][k] = mysecond()
+                times[0][k] = timer()
                 c = a.copy()
-                times[0][k] = mysecond() - times[0][k]
+                times[0][k] = timer() - times[0][k]
 
-                times[1][k] = mysecond()
+                times[1][k] = timer()
                 c *= scalar
                 b = c.copy()
-                times[1][k] = mysecond() - times[1][k]
+                times[1][k] = timer() - times[1][k]
 
-                times[2][k] = mysecond()
+                times[2][k] = timer()
                 c = a + b
-                times[2][k] = mysecond() - times[2][k]
+                times[2][k] = timer() - times[2][k]
 
-                times[3][k] = mysecond()
+                times[3][k] = timer()
                 c *= scalar
                 a = b + c
-                times[3][k] = mysecond() - times[3][k]
+                times[3][k] = timer() - times[3][k]
 
             elif test == 'cython_ref' or test == 'cython_omp':
                 if test == 'cython_ref':
                     from cython_ref import xcopy, xscale, xadd, xtriad
                 if test == 'cython_omp':
                     from cython_omp import xcopy, xscale, xadd, xtriad
-                times[0][k] = mysecond()
+                times[0][k] = timer()
                 xcopy(a, c)
-                times[0][k] = mysecond() - times[0][k]
+                times[0][k] = timer() - times[0][k]
 
-                times[1][k] = mysecond()
+                times[1][k] = timer()
                 xscale(b, c, scalar)
-                times[1][k] = mysecond() - times[1][k]
+                times[1][k] = timer() - times[1][k]
 
-                times[2][k] = mysecond()
+                times[2][k] = timer()
                 xadd(a, b, c)
-                times[2][k] = mysecond() - times[2][k]
+                times[2][k] = timer() - times[2][k]
 
-                times[3][k] = mysecond()
+                times[3][k] = timer()
                 xtriad(a, b, c, scalar)
-                times[3][k] = mysecond() - times[3][k]
+                times[3][k] = timer() - times[3][k]
 
             else:
                 print('...test not implemented')
