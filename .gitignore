@@ -1,2 +1,7 @@
 .*.swp
 __pycache__
+build/
+cython_omp.c
+cython_omp.cpython-36m-darwin.so
+cython_ref.c
+cython_ref.cpython-36m-darwin.so
