@@ -5,3 +5,6 @@ cython_omp.c
 cython_omp.cpython-36m-darwin.so
 cython_ref.c
 cython_ref.cpython-36m-darwin.so
+pybind11_ref.cpython-36m-darwin.so
+pybind11_ref.so
+var/

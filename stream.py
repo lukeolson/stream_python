@@ -25,7 +25,7 @@ def checktick():
     return minDelta
 
 
-def main(args, tests):
+def main(args, tests, testlist):
 
     STREAM_ARRAY_SIZE = args.STREAM_ARRAY_SIZE
     NTIMES = args.NTIMES
@@ -57,7 +57,7 @@ def main(args, tests):
 
     # --- SETUP --- determine precision and check timing ---
     print(HLINE)
-    print("pySTREAM version 0.01")
+    print("pySTREAM version 0.2")
     print(HLINE)
     BytesPerWord = np.nbytes[STREAM_TYPE]
     print("This system uses %d bytes per array element." % BytesPerWord)
@@ -114,7 +114,10 @@ def main(args, tests):
 
     scalar = 3.0
     for test in tests:
-        print('-- %s --' % test)
+
+        if test in testlist:
+            print('## %s' % testlist[test])
+
         times[:] = 0.0
         for k in range(NTIMES):
 
@@ -156,7 +159,7 @@ def main(args, tests):
                 a[:] = b[:] + scalar * c[:]
                 times[3][k] = timer() - times[3][k]
 
-            elif test == 'strange':
+            elif test == 'numpyops':
                 times[0][k] = timer()
                 c = a.copy()
                 times[0][k] = timer() - times[0][k]
@@ -176,10 +179,12 @@ def main(args, tests):
                 times[3][k] = timer() - times[3][k]
 
             elif test == 'cython_ref' or test == 'cython_omp':
+
                 if test == 'cython_ref':
                     from cython_ref import xcopy, xscale, xadd, xtriad
                 if test == 'cython_omp':
                     from cython_omp import xcopy, xscale, xadd, xtriad
+
                 times[0][k] = timer()
                 xcopy(a, c)
                 times[0][k] = timer() - times[0][k]
@@ -196,6 +201,27 @@ def main(args, tests):
                 xtriad(a, b, c, scalar)
                 times[3][k] = timer() - times[3][k]
 
+            elif test == 'pybind11_ref':
+
+                if test == 'pybind11_ref':
+                    import pybind11_ref
+
+                times[0][k] = timer()
+                pybind11_ref.copy(a, c)
+                times[0][k] = timer() - times[0][k]
+
+                times[1][k] = timer()
+                pybind11_ref.scale(b, c, scalar)
+                times[1][k] = timer() - times[1][k]
+
+                times[2][k] = timer()
+                pybind11_ref.add(a, b, c)
+                times[2][k] = timer() - times[2][k]
+
+                times[3][k] = timer()
+                pybind11_ref.triad(a, b, c, scalar)
+                times[3][k] = timer() - times[3][k]
+
             else:
                 print('...test not implemented')
 
@@ -205,16 +231,17 @@ def main(args, tests):
         mintime = times[:, 1:].min(axis=1)
         maxtime = times[:, 1:].max(axis=1)
 
-        print("Function    Best Rate MB/s  Avg time     Min time     Max time")
+        print("```")
+        print("Function    Best Rate GB/s  Avg time     Min time     Max time")
         for j in range(4):
             print("%s%12.1f  %11.6f  %11.6f  %11.6f" %
                   (label[j],
-                   1.0e-06 * tbytes[j]/mintime[j],
+                   1.0e-09 * tbytes[j]/mintime[j],
                    avgtime[j],
                    mintime[j],
                    maxtime[j]))
+        print("```\n")
 
-        print(HLINE)
 
 if __name__ == '__main__':
     import argparse
@@ -231,16 +258,22 @@ if __name__ == '__main__':
     parser.add_argument('--test', nargs="*", default=['all'])
     args = parser.parse_args()
 
-    testlist = ['reference', 'vector', 'strange', 'cython_ref', 'cython_omp']
+    testlist = {'reference': 'Pure Python using loops',
+                'vector': 'Pure Python vectorized',
+                'numpyops': 'Pure Python using numpy operators',
+                'cython_ref': 'Cython, a reference implementation',
+                'cython_omp': 'Cython, optimized',
+                'pybind11_ref': 'Pybind11 reference implementation',
+                }
     tests = []
 
     if 'all' in args.test:
-        tests = testlist
+        tests = list(testlist.keys())
 
     for test in args.test:
         if test in testlist:
             tests.append(test)
 
     tests = list(set(tests))  # uniquify
-    main(args, tests)
+    main(args, tests, testlist)
     checktick()
