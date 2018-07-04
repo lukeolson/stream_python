@@ -2,10 +2,6 @@ import numpy as np
 from timeit import default_timer as timer
 
 
-def checkSTREAMresults():
-    pass
-
-
 def checktick():
     M = 20
     timesfound = np.empty((M,))
@@ -25,7 +21,7 @@ def checktick():
     return minDelta
 
 
-def main(args, tests, testlist):
+def main(args, tests, desc):
 
     STREAM_ARRAY_SIZE = args.STREAM_ARRAY_SIZE
     NTIMES = args.NTIMES
@@ -60,20 +56,16 @@ def main(args, tests, testlist):
     print("pySTREAM version 0.2")
     print(HLINE)
     BytesPerWord = np.nbytes[STREAM_TYPE]
-    print("This system uses %d bytes per array element." % BytesPerWord)
-
-    print(HLINE)
-    print("Array size = %d (elements), Offset = %d (elements)" %
-          (STREAM_ARRAY_SIZE, OFFSET))
-    print("Memory per array = %.1f MiB (= %.1f GiB)." %
+    print("Bytes per array element: %d" % BytesPerWord)
+    print("             Array size: %d (elements)" % STREAM_ARRAY_SIZE)
+    print("                 Offset: %d (elements)" % OFFSET)
+    print("       Memory per array: %.2f MiB (= %.2f GiB)." %
           (BytesPerWord * (STREAM_ARRAY_SIZE / 1024.0 / 1024.0),
            BytesPerWord * (STREAM_ARRAY_SIZE / 1024.0 / 1024.0 / 1024.0)))
-    print("Total memory required = %.1f MiB (= %.1f GiB)." %
+    print("  Total memory required: %.2f MiB (= %.2f GiB)." %
           (3.0 * BytesPerWord * (STREAM_ARRAY_SIZE / 1024.0 / 1024.0),
            3.0 * BytesPerWord * (STREAM_ARRAY_SIZE / 1024.0 / 1024.0 / 1024.)))
-    print("Each kernel will be executed %d times." % NTIMES)
-    print(" The *best* time for each kernel (excluding the first iteration)")
-    print(" will be used to compute the reported bandwidth.")
+    print("        Number of tests: %d" % NTIMES)
 
     # Get initial value for system clock.
     for j in range(STREAM_ARRAY_SIZE):
@@ -81,15 +73,11 @@ def main(args, tests, testlist):
         b[j] = 2.0
         c[j] = 0.0
 
-    print(HLINE)
-
     quantum = checktick()
     if quantum >= 1:
-        print("Your clock granularity/precision appears to be " +
-              "%d microseconds." % quantum)
+        print("      Clock granularity: ~%d us" % quantum)
     else:
-        print("Your clock granularity appears to be "
-              "less than one microsecond.")
+        print("      Clock granularity: <1 us" % quantum)
         quantum = 1
 
     t = timer()
@@ -97,17 +85,15 @@ def main(args, tests, testlist):
         a[j] = 2.0 * a[j]
     t = 1.0e6 * (timer() - t)
 
-    print("Each test below will take on the order"
-          " of %d microseconds." % int(t))
-    print("   (= %d clock ticks)" % int(t/quantum))
-    print("Increase the size of the arrays if this shows that")
-    print("you are not getting at least 20 clock ticks per test.")
+    print("              Test time: ~%d us" % int(t))
+    print("                       :  %d clock ticks)" % int(t/quantum))
+    if int(t/quantum) <= 20:
+        print("Note -- this should be > 20 clock ticks")
 
     print(HLINE)
-
-    print("WARNING -- The above is only a rough guideline.")
-    print("For best results, please be sure you know the")
-    print("precision of your system timer.")
+    print("Note -- Bandwidth is calculated using the *minimum* time")
+    print("        (after the first iteration)")
+    print("Note -- This is only a guideline.")
     print(HLINE)
 
     # --- MAIN LOOP --- repeat test cases NTIMES times ---
@@ -115,8 +101,8 @@ def main(args, tests, testlist):
     scalar = 3.0
     for test in tests:
 
-        if test in testlist:
-            print('## %s' % testlist[test])
+        if test in desc:
+            print('## %s' % desc[test])
 
         times[:] = 0.0
         for k in range(NTIMES):
@@ -258,22 +244,25 @@ if __name__ == '__main__':
     parser.add_argument('--test', nargs="*", default=['all'])
     args = parser.parse_args()
 
-    testlist = {'reference': 'Pure Python using loops',
-                'vector': 'Pure Python vectorized',
-                'numpyops': 'Pure Python using numpy operators',
-                'cython_ref': 'Cython, a reference implementation',
-                'cython_omp': 'Cython, optimized',
-                'pybind11_ref': 'Pybind11 reference implementation',
-                }
+    desc = {'reference': 'Pure Python using loops',
+            'vector': 'Pure Python vectorized',
+            'numpyops': 'Pure Python using numpy operators',
+            'cython_ref': 'Cython, a reference implementation',
+            'cython_omp': 'Cython, optimized',
+            'pybind11_ref': 'Pybind11 reference implementation',
+           }
+    testlist = ['reference', 'vector', 'numpyops',
+                'cython_ref', 'cython_omp',
+                'pybind11_ref',
+               ]
     tests = []
 
     if 'all' in args.test:
-        tests = list(testlist.keys())
+        tests = testlist
 
     for test in args.test:
         if test in testlist:
             tests.append(test)
 
-    tests = list(set(tests))  # uniquify
-    main(args, tests, testlist)
+    main(args, tests, desc)
     checktick()
