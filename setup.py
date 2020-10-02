@@ -6,8 +6,8 @@ from Cython.Distutils import build_ext
 import os
 import sys
 
-os.environ["CC"] = "/usr/local/bin/gcc-8"
-os.environ["CXX"] = "/usr/local/bin/g++-8"
+os.environ["CC"] = "/usr/local/bin/gcc-10"
+os.environ["CXX"] = "/usr/local/bin/g++-10"
 
 # As of Python 3.6, CCompiler has a `has_flag` method.
 # cf http://bugs.python.org/issue26689
@@ -94,8 +94,13 @@ module_pybind11_ref = Extension("pybind11_ref",
                        ],
                        language='c++')
 
+ext_modules = [module_cython_ref,
+               module_cython_omp,
+               module_pybind11_ref]
+
+for e in ext_modules:
+    e.cython_directives = {'language_level': "3"}
+
 setup(name="cython_stream",
       cmdclass={"build_ext": BuildExt},
-      ext_modules=[module_cython_ref,
-                   module_cython_omp,
-                   module_pybind11_ref])
+      ext_modules=ext_modules)
